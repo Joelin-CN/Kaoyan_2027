@@ -42,6 +42,12 @@ h3{margin:0 0 10px;font-size:14.5px;color:var(--txt)}
 .tag.A{color:#dc2626;border-color:#f3c1c1;background:#fef5f5}
 .tag.B{color:#2f6fed;border-color:#c3d7fb;background:#f4f8ff}
 .tag.C{color:#667085}
+.st{display:inline-block;padding:1px 9px;border-radius:6px;font-size:12px;font-weight:500}
+.st-未学{background:#eef1f6;color:#7a8291}
+.st-薄弱{background:#fdeaea;color:#dc2626}
+.st-理解{background:#fef3e2;color:#d97706}
+.st-刷题{background:#e8f5ec;color:#1a7f4b}
+.st-掌握{background:#1a7f4b;color:#ffffff}
 .zap{color:var(--zap)}
 .dots span{cursor:pointer;font-size:16px;letter-spacing:2px;user-select:none;color:var(--acc)}
 .dots span.off{color:#d3d9e2}
@@ -111,7 +117,7 @@ select,input[type=text]{background:#fff;border:1px solid var(--line);color:var(-
     <div class="grid g4" id="kpis"></div>
     <div class="grid g2">
       <div class="card"><h3>状态分布</h3><div id="ch-donut" class="chart"></div></div>
-      <div class="card"><h3>进度趋势 <span class="dim sm">周新学 📖 / 累计 vs 理想轨迹</span></h3>
+      <div class="card"><h3>进度趋势 <span class="dim sm">周新学 / 累计 vs 理想轨迹</span></h3>
         <div id="ch-trend" class="chart" style="height:290px"></div></div>
     </div>
     <div class="card">
@@ -124,7 +130,7 @@ select,input[type=text]{background:#fff;border:1px solid var(--line);color:var(-
       <div class="card"><h3>每日能量（1~5）</h3><div id="ch-energy" class="chart"></div></div>
     </div>
     <div class="card">
-      <h3>各科覆盖率（📖及以上，底线 70% / 目标 95%）</h3><div id="subj"></div>
+      <h3>各科覆盖率（理解及以上，底线 70% / 目标 95%）</h3><div id="subj"></div>
     </div>
   </section>
 
@@ -139,9 +145,9 @@ select,input[type=text]{background:#fff;border:1px solid var(--line);color:var(-
       <div class="filters">
         <select id="f-subj" onchange="renderAll()"></select>
         <select id="f-st" onchange="renderAll()">
-          <option value="">全部状态</option><option value="unread">⬜ 未学</option>
-          <option value="thin">🔁 薄弱/超期</option><option value="read">📖 已理解</option>
-          <option value="done">✍️✅ 已刷题/掌握</option><option value="smoke">⚠️ 冒烟未过</option>
+          <option value="">全部状态</option><option value="unread">未学</option>
+          <option value="thin">薄弱/超期</option><option value="read">理解</option>
+          <option value="done">刷题/掌握</option><option value="smoke">冒烟未过</option>
         </select>
         <select id="f-sort" onchange="renderAll()">
           <option value="mastery">按掌握度（低→高）</option>
@@ -163,7 +169,7 @@ select,input[type=text]{background:#fff;border:1px solid var(--line);color:var(-
       </table>
       </div>
       <div class="sm dim" style="margin-top:10px">
-        掌握度：1~2=🔁薄弱（需回炉） · 3=📖理解 · 4=✍️熟练 · 5=✅精通；做题发现理解问题 → 直接点低分降级。
+        掌握度：1~2=薄弱（需回炉） · 3=理解 · 4=熟练 · 5=精通；做题发现理解问题 → 直接点低分降级。
       </div>
     </div>
   </section>
@@ -176,6 +182,11 @@ let OV = null, ALL = null, TR = null, DAY = {energy:null, picked:null, mode:'idl
 const CHARTS = {};
 const C = {unread:'#d9dfe8', thin:'#dc2626', read:'#f59e0b', done:'#65b36b',
            master:'#1a7f4b', acc:'#2f6fed', ideal:'#dc2626'};
+const ST_COLOR = {'未学':'#d9dfe8','薄弱':'#dc2626','理解':'#f59e0b','刷题':'#65b36b','掌握':'#1a7f4b'};
+function badge(proto){
+  const base = proto.replace('·疑','');
+  return `<span class="st st-${base}">${proto}</span>`;
+}
 
 function toast(msg, ok=true){
   const t = $('#toast'); t.textContent = msg;
@@ -201,17 +212,17 @@ async function loadOverview(){
   OV = await api('/api/overview');
   $('#today-badge').textContent = OV.date;
   if(OV.warns && OV.warns.length){
-    $('#warns').innerHTML = '<div class="warnbox">⚠️ ' + OV.warns.join('；') + '</div>';
+    $('#warns').innerHTML = '<div class="warnbox">注意：' + OV.warns.join('；') + '</div>';
   }
   const t = OV.today;
   const dayStat = t.settled ? '<span style="color:var(--ok)">已结算 ✓</span>'
     : t.drawn ? '<span style="color:var(--warn)">已抽取未结算</span>'
     : '<span style="color:var(--dim)">未开始</span>';
   $('#kpis').innerHTML = `
-    <div class="card kpi"><div class="l">理解期进度（📖及以上）</div>
+    <div class="card kpi"><div class="l">理解期进度（理解及以上）</div>
       <div class="v">${OV.read_pct}%</div>
       <div class="bar"><i style="width:${OV.read_pct}%"></i></div>
-      <div class="s dim">目标 ${OV.read_target_pct}% · 已学 ${OV.total - OV.dist['⬜']}/${OV.total}</div></div>
+      <div class="s dim">目标 ${OV.read_target_pct}% · 已学 ${OV.total - OV.dist['未学']}/${OV.total}</div></div>
     <div class="card kpi"><div class="l">距理解期红线 2027-02-10</div>
       <div class="v">${OV.days_to_redline}</div><div class="s dim">天（今日 ${OV.date}）</div></div>
     <div class="card kpi"><div class="l">今日</div>
@@ -220,7 +231,7 @@ async function loadOverview(){
     <div class="card kpi"><div class="l">本周吞吐 / 薄弱池</div>
       <div class="v">${OV.this_week_new}<span style="font-size:15px;color:var(--dim)"> 新学</span>
         · ${OV.thin_pool_size}<span style="font-size:15px;color:var(--dim)"> 待回炉</span></div>
-      <div class="s dim">本周新学📖数 / 需回炉点总数</div></div>`;
+      <div class="s dim">本周新学数 / 需回炉点总数</div></div>`;
   $('#subj').innerHTML = Object.entries(OV.subjects).map(([k,s])=>`
     <div style="margin-bottom:10px">
       <div class="sm"><b>${k}</b>　${s.read}/${s.total}（${s.read_pct}%）
@@ -239,21 +250,21 @@ async function loadTrends(){
     series:[{type:'pie', radius:['56%','82%'], center:['50%','50%'],
       label:{show:false},
       data:[
-        {name:'⬜ 未学', value:d['⬜']||0, itemStyle:{color:C.unread}},
-        {name:'🔁 薄弱', value:d['🔁']||0, itemStyle:{color:C.thin}},
-        {name:'📖 已理解', value:d['📖']||0, itemStyle:{color:C.read}},
-        {name:'✍️ 已刷题', value:d['✍️']||0, itemStyle:{color:C.done}},
-        {name:'✅ 已掌握', value:d['✅']||0, itemStyle:{color:C.master}},
-      ].filter(x=>x.value>0 || x.name.startsWith('⬜'))},
+        {name:'未学', value:d['未学']||0, itemStyle:{color:C.unread}},
+        {name:'薄弱', value:d['薄弱']||0, itemStyle:{color:C.thin}},
+        {name:'理解', value:d['理解']||0, itemStyle:{color:C.read}},
+        {name:'刷题', value:d['刷题']||0, itemStyle:{color:C.done}},
+        {name:'掌握', value:d['掌握']||0, itemStyle:{color:C.master}},
+      ].filter(x=>x.value>0 || x.name==='未学')},
       {type:'pie', radius:['0%','0%'], label:{show:true, position:'center',
-        formatter:`${OV.read_pct}%\n📖及以上`, fontSize:22, fontWeight:700, color:'#1f2328',
+        formatter:`${OV.read_pct}%\n理解及以上`, fontSize:22, fontWeight:700, color:'#1f2328',
         lineHeight:30}, data:[{value:1}], silent:true}],
     graphic:[]});
   // 主趋势组合图
   const wk = TR.weeks;
   chart('ch-trend').setOption({
     tooltip:{trigger:'axis'},
-    legend:{data:['周新学','累计📖','理想轨迹','周复习'], top:0, textStyle:{color:'#667085', fontSize:12}},
+    legend:{data:['周新学','累计','理想轨迹','周复习'], top:0, textStyle:{color:'#667085', fontSize:12}},
     grid:{left:44, right:40, top:34, bottom:26},
     xAxis:{type:'category', data:wk.map(x=>x.week),
       axisLabel:{color:'#667085', fontSize:11}},
@@ -262,7 +273,7 @@ async function loadTrends(){
       {type:'value', name:'复习', axisLabel:{color:'#667085',fontSize:11}, splitLine:{show:false}}],
     series:[
       {name:'周新学', type:'bar', data:wk.map(x=>x.new), itemStyle:{color:C.acc, borderRadius:[3,3,0,0]}, barMaxWidth:26},
-      {name:'累计📖', type:'line', smooth:true, data:wk.map(x=>x.cum),
+      {name:'累计', type:'line', smooth:true, data:wk.map(x=>x.cum),
         lineStyle:{color:C.master, width:2.5}, itemStyle:{color:C.master}, symbolSize:5},
       {name:'理想轨迹', type:'line', data:wk.map(x=>x.ideal), symbol:'none',
         lineStyle:{color:C.ideal, type:'dashed', width:1.5},
@@ -332,17 +343,17 @@ function renderDay(){
   const c = $('#day-card');
   const t = OV.today;
   if(t.settled){
-    c.innerHTML = `<h3>✅ 今日已结算（${OV.date}）</h3>
+    c.innerHTML = `<h3>今日已结算 ✓（${OV.date}）</h3>
       <div class="sm dim">新 ${t.new_ids.length} · 复习 ${t.review_ids.length} · 档位 ${t.energy}。
       补记/降级请去「知识点全表」行内直接点评分。</div>
       <div style="margin-top:12px">${t.new_ids.concat(t.review_ids).map(id=>{
         const p = ALL.points.find(x=>x.id===id);
-        return p?`<span class="tag">${p.id} ${p.proto} ${'●'.repeat(p.mastery)}</span>`:''}).join(' ')}</div>`;
+        return p?`<span class="tag">${p.id} ${badge(p.proto)} ${'●'.repeat(p.mastery)}</span>`:''}).join(' ')}</div>`;
     return;
   }
   if(DAY.mode === 'idle' && !t.drawn){
     c.innerHTML = `<h3>开始今天：选一个数字（= 今天要学的新知识点个数）</h3>
-      <div class="sm dim" style="margin-bottom:4px">抽取规则：同学科内依赖已📖 · A级配额≥60% · 附带 2 个薄弱/超期复习点</div>
+      <div class="sm dim" style="margin-bottom:4px">抽取规则：同学科内依赖已理解 · A级配额≥60% · 附带 2 个薄弱/超期复习点</div>
       <div class="num-pick">${[1,2,3,4,5].map(n=>
         `<button onclick="draw(${n})">${n}</button>`).join('')}</div>`;
     return;
@@ -374,11 +385,11 @@ function renderDay(){
     ${d.note?`<div class="warnbox sm" style="padding:6px 10px">${d.note}</div>`:''}
     <div class="sm dim" style="margin-bottom:8px">可学池剩余 ${d.learnable_total}（A级 ${d.learnable_a}）</div>
     <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
-      <button class="btn ghost" onclick="draw(${DAY.energy})">🔁 换一批</button>
+      <button class="btn ghost" onclick="draw(${DAY.energy})">换一批</button>
       <button class="btn ghost" onclick="draw(${DAY.energy},${Math.max(0,(d.review.length-1))})">复习 −</button>
       <button class="btn ghost" onclick="draw(${DAY.energy},${d.review.length+1})">复习 +</button>
       <span style="flex:1"></span>
-      <button class="btn warn" onclick="settle()">🌙 结算今天</button>
+      <button class="btn warn" onclick="settle()">结算今天</button>
     </div>
     ${d.new.map(p=>row(p,false)).join('')}
     ${d.review.length?`<h3 style="margin-top:16px">复习（薄弱/超期优先）</h3>${d.review.map(p=>row(p,true)).join('')}`:
@@ -456,12 +467,12 @@ function renderAll(){
       <td style="font-family:monospace;color:var(--acc)">${p.id}</td>
       <td style="white-space:normal;max-width:320px">${p.name}${p.zap?' ⚡':''}</td>
       <td class="dim">${p.subject}</td><td><span class="tag ${p.priority}">${p.priority}</span></td>
-      <td>${p.proto}</td>
+      <td>${badge(p.proto)}</td>
       <td>${dots(p.mastery, true)}</td>
       <td class="dim">${p.first_learned||'—'}</td>
       <td class="dim">${daysTxt(p.age_days)}</td>
       <td class="dim">${p.last_reviewed||'—'}</td>
-      <td class="dim">${p.since_review_days!=null?p.since_review_days+'天':'—'}${p.overdue>0?'<span style="color:var(--warn)">超'+Math.min(p.overdue,999)+'</span>':''}</td>
+      <td class="dim">${p.since_review_days!=null?p.since_review_days+'天':'—'}${p.overdue>0?(p.overdue>=999?'<span style="color:var(--warn)">常驻回炉</span>':'<span style="color:var(--warn)">超'+p.overdue+'天</span>'):''}</td>
       <td>${p.packet_done?'✓':'<span class="dim">—</span>'}</td>
       <td><button class="btn ghost" style="padding:2px 10px;font-size:12px"
         onclick="toggleHist('${p.id}')">${openRow===p.id?'收起':'历史'}</button></td>
@@ -483,7 +494,7 @@ async function setStarRow(el, id, i){
   await api('/api/adjust', {id, mastery:i});
   toast(id + ' → ' + i + ' 级');
   const p = ALL.points.find(x=>x.id===id);
-  p.mastery = i; p.proto = i<=2?'🔁':(i===3?(p.packet_done?'✍️':'📖'):(i===4?'✍️':(p.packet_done?'✅':'✍️')));
+  p.mastery = i; p.proto = i<=2?'薄弱':(i===3?(p.packet_done?'刷题':'理解'):(i===4?'刷题':(p.packet_done?'掌握':'刷题')));
 }
 document.addEventListener('click', e=>{
   const s = e.target.closest('#all-body .dots span');

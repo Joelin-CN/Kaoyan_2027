@@ -138,21 +138,21 @@ def git_commit(msg):
 
 # ---------------- 掌握度 → 协议状态换算 ----------------
 def mastery_to_proto(ps):
-    """⬜未学 / 🔁薄弱(m≤2) / 📖(m=3) / ✍️(m=4 或 3+题包) / ✅(m=5+题包)；冒烟未过叠⚠️"""
+    """未学/薄弱/理解/刷题/掌握；冒烟未过加 ·疑 后缀"""
     if not ps:
-        return "⬜"
+        return "未学"
     m = ps.get("mastery", 0)
     if m <= 2:
-        st = "🔁"
+        st = "薄弱"
     elif m == 3:
-        st = "✍️" if ps.get("packet_done") else "📖"
+        st = "刷题" if ps.get("packet_done") else "理解"
     elif m == 4:
-        st = "✍️"
+        st = "刷题"
     else:
-        st = "✅" if ps.get("packet_done") else "✍️"
+        st = "掌握" if ps.get("packet_done") else "刷题"
     smoke = ps.get("smoke") or {}
     if smoke and smoke.get("passed") is False:
-        st += "⚠️"
+        st += "·疑"
     return st
 
 
@@ -207,17 +207,17 @@ def point_view(pid, d, state, today):
 
 def overview(defs, state, today):
     n = len(defs)
-    dist = {"⬜": 0, "🔁": 0, "📖": 0, "✍️": 0, "✅": 0, "⚠️": 0}
+    dist = {"未学": 0, "薄弱": 0, "理解": 0, "刷题": 0, "掌握": 0, "疑点": 0}
     subj = {}
     read_cnt = packet_cnt = 0
     for pid, d in defs.items():
         ps = state["points"].get(pid)
         st = mastery_to_proto(ps)
-        base = st.replace("⚠️", "")
+        base = st.replace("·疑", "")
         if base in dist:
             dist[base] += 1
-        if "⚠️" in st:
-            dist["⚠️"] += 1
+        if "疑" in st:
+            dist["疑点"] += 1
         m = ps.get("mastery", 0) if ps else 0
         s = subj.setdefault(d["subject"], {"total": 0, "read": 0})
         s["total"] += 1
