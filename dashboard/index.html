@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>考研知识点看板</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --bg:#0f1115; --card:#171a21; --line:#262b36; --txt:#d7dce4; --dim:#8b93a3;
+  --acc:#4f8cff; --ok:#3fb96f; --warn:#e0a03c; --bad:#e05c5c; --zap:#e6c35c;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font:14px/1.6 "Segoe UI",system-ui,"Microsoft YaHei",sans-serif}
+header{display:flex;align-items:center;gap:16px;padding:14px 22px;
+  border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:9}
+header h1{font-size:16px;margin:0;font-weight:600}
+nav{display:flex;gap:6px}
+nav button{background:none;border:1px solid transparent;color:var(--dim);
+  padding:6px 14px;border-radius:8px;cursor:pointer;font-size:14px}
+nav button.on{color:var(--txt);border-color:var(--acc);background:rgba(79,140,255,.12)}
+#today-badge{margin-left:auto;font-size:13px;color:var(--dim)}
+main{max-width:1100px;margin:0 auto;padding:22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.kpi .v{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi .l{color:var(--dim);font-size:12.5px}
+.kpi .s{font-size:12px;margin-top:4px}
+.bar{height:10px;background:#2a3242;border-radius:5px;overflow:hidden;margin-top:8px;outline:1px solid #333c4e}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#5e9bff,#4f8cff);border-radius:5px;min-width:3px}
+.bar i.floor{background:linear-gradient(90deg,var(--acc) var(--p,70%),#2c3242 var(--p,70%))}
+h3{margin:0 0 10px;font-size:14.5px;color:var(--txt)}
+.dim{color:var(--dim)} .sm{font-size:12.5px}
+.tag{display:inline-block;padding:1px 8px;border-radius:6px;font-size:12px;border:1px solid var(--line);color:var(--dim)}
+.tag.A{color:#ff9d9d;border-color:#5a3434}.tag.B{color:#9dc3ff;border-color:#2f4560}.tag.C{color:#c7c7c7}
+.zap{color:var(--zap)}
+.dots span{cursor:pointer;font-size:16px;letter-spacing:2px;user-select:none}
+.dots span.off{color:#333a48}
+.btn{background:var(--acc);border:none;color:#fff;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:14px}
+.btn.ghost{background:none;border:1px solid var(--line);color:var(--txt)}
+.btn.warn{background:var(--warn)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.num-pick{display:flex;gap:10px;margin:14px 0}
+.num-pick button{width:56px;height:56px;font-size:22px;border-radius:12px;
+  border:1px solid var(--line);background:#1c212b;color:var(--txt);cursor:pointer}
+.num-pick button:hover{border-color:var(--acc)}
+.num-pick button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.pt{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:10px;background:#191d26}
+.pt .hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pt .id{font-family:Consolas,monospace;color:var(--acc);font-weight:700}
+.pt .nm{font-weight:600}
+.pt .meta{color:var(--dim);font-size:12.5px;margin-top:3px}
+.pt .ops{margin-top:8px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.smoke-b{display:flex;gap:6px}
+.smoke-b button{font-size:12px;padding:3px 10px;border-radius:6px;cursor:pointer;
+  border:1px solid var(--line);background:none;color:var(--dim)}
+.smoke-b button.on.yes{color:var(--ok);border-color:var(--ok)}
+.smoke-b button.on.no{color:var(--bad);border-color:var(--bad)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--dim);font-weight:500;cursor:pointer;user-select:none}
+tr.weak td{background:rgba(224,92,92,.05)}
+tr.det{white-space:normal}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+select,input[type=text]{background:#1c212b;border:1px solid var(--line);color:var(--txt);
+  border-radius:8px;padding:6px 10px;font-size:13px}
+.hist{margin-top:8px;padding:8px 12px;background:#141821;border-radius:8px;font-size:12.5px;color:var(--dim)}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+  background:var(--ok);color:#fff;padding:10px 22px;border-radius:10px;display:none;z-index:99}
+.warnbox{background:rgba(224,160,60,.1);border:1px solid rgba(224,160,60,.4);
+  color:var(--warn);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px}
+.mini-bars{display:flex;align-items:flex-end;gap:10px;height:90px;padding-top:6px}
+.mini-bars .b{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.mini-bars .b i{width:100%;background:var(--acc);border-radius:4px 4px 0 0;min-height:2px}
+.mini-bars .b span{font-size:11px;color:var(--dim)}
+.lgd{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--dim)}
+.lgd b{color:var(--txt);font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<header>
+  <h1>📚 考研知识点看板</h1>
+  <nav>
+    <button id="tab-ov" class="on" onclick="switchTab('ov')">总览</button>
+    <button id="tab-day" onclick="switchTab('day')">今日</button>
+    <button id="tab-all" onclick="switchTab('all')">知识点全表</button>
+  </nav>
+  <span id="today-badge"></span>
+</header>
+<main>
+  <div id="warns"></div>
+
+  <!-- ============ 总览 ============ -->
+  <section id="view-ov">
+    <div class="grid g4" id="kpis"></div>
+    <div class="grid g2">
+      <div class="card" id="subj-card"><h3>各科覆盖率（📖及以上，底线 70% / 目标 95%）</h3><div id="subj"></div></div>
+      <div class="card">
+        <h3>状态分布</h3>
+        <div class="lgd" id="dist"></div>
+        <h3 style="margin-top:18px">近4周吞吐（新学📖/周）</h3>
+        <div class="mini-bars" id="weeks"></div>
+        <div class="sm dim" style="margin-top:10px">协议参考值：理解期 17~25📖/周 · 11.16 校准线 15📖/周</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 今日 ============ -->
+  <section id="view-day" style="display:none">
+    <div class="card" id="day-card"></div>
+  </section>
+
+  <!-- ============ 全表 ============ -->
+  <section id="view-all" style="display:none">
+    <div class="card">
+      <div class="filters">
+        <select id="f-subj" onchange="renderAll()"></select>
+        <select id="f-st" onchange="renderAll()">
+          <option value="">全部状态</option><option value="unread">⬜ 未学</option>
+          <option value="thin">🔁 薄弱/超期</option><option value="read">📖 已理解</option>
+          <option value="done">✍️✅ 已刷题/掌握</option><option value="smoke">⚠️ 冒烟未过</option>
+        </select>
+        <select id="f-sort" onchange="renderAll()">
+          <option value="mastery">按掌握度（低→高）</option>
+          <option value="overdue">按超期程度</option>
+          <option value="age">按学龄（久→近）</option>
+          <option value="id">按 ID</option>
+        </select>
+        <input type="text" id="f-q" placeholder="搜索ID/名称" oninput="renderAll()">
+        <span class="dim sm" id="all-count"></span>
+      </div>
+      <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th style="width:60px">ID</th><th>知识点</th><th>科目</th><th>级</th>
+          <th>状态</th><th>掌握度（点击评分）</th><th>首次</th><th>学龄</th>
+          <th>上次复习</th><th>距今</th><th>题包</th><th></th>
+        </tr></thead>
+        <tbody id="all-body"></tbody>
+      </table>
+      </div>
+      <div class="sm dim" style="margin-top:10px">
+        掌握度：1~2=🔁薄弱（需回炉） · 3=📖理解 · 4=✍️熟练 · 5=✅精通；做题发现理解问题 → 直接点低分降级。
+      </div>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+let OV = null, ALL = null, DAY = {energy:null, picked:null, mode:'idle'};
+
+function toast(msg, ok=true){
+  const t = $('#toast'); t.textContent = msg;
+  t.style.background = ok ? 'var(--ok)' : 'var(--bad)'; t.style.display='block';
+  setTimeout(()=>t.style.display='none', 2200);
+}
+async function api(path, body){
+  const r = await fetch(path, body ? {method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(body)} : undefined);
+  if(!r.ok) throw new Error((await r.json().catch(()=>({}))).error || r.status);
+  return r.json();
+}
+function daysTxt(n){ return n==null ? '—' : n + '天'; }
+
+/* ---------------- 总览 ---------------- */
+async function loadOverview(){
+  OV = await api('/api/overview');
+  $('#today-badge').textContent = OV.date;
+  if(OV.warns && OV.warns.length){
+    $('#warns').innerHTML = '<div class="warnbox">⚠️ ' + OV.warns.join('；') + '</div>';
+  }
+  const t = OV.today;
+  const dayStat = t.settled ? '<span style="color:var(--ok)">已结算 ✓</span>'
+    : t.drawn ? '<span style="color:var(--warn)">已抽取未结算</span>'
+    : '<span style="color:var(--dim)">未开始</span>';
+  $('#kpis').innerHTML = `
+    <div class="card kpi"><div class="l">理解期进度（📖及以上）</div>
+      <div class="v">${OV.read_pct}%</div>
+      <div class="bar"><i style="width:${OV.read_pct}%"></i></div>
+      <div class="s dim">目标 ${OV.read_target_pct}% · 已学 ${OV.total - OV.dist['⬜']}/${OV.total}</div></div>
+    <div class="card kpi"><div class="l">距理解期红线 2027-02-10</div>
+      <div class="v">${OV.days_to_redline}</div><div class="s dim">天（今日 ${OV.date}）</div></div>
+    <div class="card kpi"><div class="l">今日</div>
+      <div class="v" style="font-size:18px;padding-top:8px">${dayStat}</div>
+      <div class="s dim">${t.energy ? '档位 '+t.energy+' · 新'+t.new_ids.length+' 复习'+t.review_ids.length : '去「今日」开始抽取'}</div></div>
+    <div class="card kpi"><div class="l">本周吞吐 / 薄弱池</div>
+      <div class="v">${OV.this_week_new} <span style="font-size:16px;color:var(--dim)">/ ${OV.thin_pool_size}</span></div>
+      <div class="s dim">新学📖数 / 待回炉点数</div></div>`;
+  $('#subj').innerHTML = Object.entries(OV.subjects).map(([k,s])=>`
+    <div style="margin-bottom:10px">
+      <div class="sm"><b>${k}</b>　${s.read}/${s.total}（${s.read_pct}%）
+        <span class="dim">底线${OV.subject_floor_pct}% ${s.read_pct>=OV.subject_floor_pct?'✓':'✗'}</span></div>
+      <div class="bar"><i class="floor" style="width:${Math.min(100,s.read_pct)}%;--p:${OV.subject_floor_pct}%"></i></div>
+    </div>`).join('');
+  $('#dist').innerHTML = ['⬜','🔁','📖','✍️','✅','⚠️'].map(k=>
+    `<span>${k} <b>${OV.dist[k]||0}</b></span>`).join('') +
+    `<span>题包✍️+ <b>${OV.packet_pct}%</b></span>`;
+  const mx = Math.max(15, ...OV.last4_weeks.map(x=>x[1]));
+  $('#weeks').innerHTML = (OV.last4_weeks.length? OV.last4_weeks : [['',0]]).map(([w,c])=>`
+    <div class="b"><span style="color:var(--txt);font-weight:600">${c}</span>
+      <i style="height:${Math.max(3,c*72/mx)}px"></i><span>${w||'—'}</span></div>`).join('');
+}
+
+/* ---------------- 今日 ---------------- */
+function dots(cur, forAll){
+  let h = '<span class="dots">';
+  for(let i=1;i<=5;i++) h += `<span class="${i<=cur?'':'off'}" ${forAll?'':'onclick="setStar(this,'+i+')"'}>${i<=cur?'●':'○'}</span>`;
+  return h + '</span>';
+}
+function renderDay(){
+  const c = $('#day-card');
+  const t = OV.today;
+  if(t.settled){
+    c.innerHTML = `<h3>✅ 今日已结算（${OV.date}）</h3>
+      <div class="sm dim">新 ${t.new_ids.length} · 复习 ${t.review_ids.length} · 档位 ${t.energy}。
+      补记/降级请去「知识点全表」行内直接点评分。</div>
+      <div style="margin-top:12px">${t.new_ids.concat(t.review_ids).map(id=>{
+        const p = ALL.points.find(x=>x.id===id);
+        return p?`<span class="tag">${p.id} ${p.proto} ${'●'.repeat(p.mastery)}</span>`:''}).join(' ')}</div>`;
+    return;
+  }
+  if(DAY.mode === 'idle' && !t.drawn){
+    c.innerHTML = `<h3>开始今天：选一个数字（= 今天要学的新知识点个数）</h3>
+      <div class="sm dim" style="margin-bottom:4px">抽取规则：可学池（前置依赖已📖）内随机 · A级配额≥60% · 附带 2 个薄弱/超期复习点</div>
+      <div class="num-pick">${[1,2,3,4,5].map(n=>
+        `<button onclick="draw(${n})">${n}</button>`).join('')}</div>`;
+    return;
+  }
+  // drawn 视图：任务卡 + 结算
+  const d = DAY.picked || {new:[], review:[]};
+  const row = (p, isRev) => {
+    const st = DAY.stars[p.id] || p.mastery || 0;
+    const sm = DAY.smoke[p.id];
+    return `<div class="pt">
+      <div class="hd"><span class="id">${p.id}</span><span class="nm">${p.name}</span>
+        <span class="tag ${p.priority}">${p.priority}</span>
+        ${p.zap?'<span class="zap" title="实战加成">⚡</span>':''}
+        <span class="tag">${p.subject}</span>
+        ${isRev?`<span class="tag" style="color:var(--warn)">复习</span>
+          <span class="sm dim">当前掌握 ${p.mastery} · 距上次 ${daysTxt(p.since_review_days)}${p.overdue>0?' · 超期'+p.overdue+'天':''}</span>`:''}
+      </div>
+      <div class="meta">题包：${p.packet}　${p.note?('· '+p.note):''}</div>
+      <div class="ops">
+        <span class="sm dim">今晚自评：</span>${dots(st)}
+        <span class="smoke-b">
+          <button class="${sm===true?'on yes':''}" onclick="setSmoke('${p.id}',true)">冒烟过</button>
+          <button class="${sm===false?'on no':''}" onclick="setSmoke('${p.id}',false)">冒烟未过</button>
+        </span>
+        <label class="sm dim"><input type="checkbox" ${DAY.packet[p.id]?'checked':''}
+          onclick="DAY.packet['${p.id}']=this.checked"> 题包已清</label>
+      </div></div>`;
+  };
+  c.innerHTML = `<h3>今日任务（${OV.date}） · 档位 ${DAY.energy}</h3>
+    ${d.note?`<div class="warnbox sm" style="padding:6px 10px">${d.note}</div>`:''}
+    <div class="sm dim" style="margin-bottom:8px">可学池剩余 ${d.learnable_total}（A级 ${d.learnable_a}）</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn ghost" onclick="draw(${DAY.energy})">🔁 换一批</button>
+      <button class="btn ghost" onclick="draw(${DAY.energy},${Math.max(0,(d.review.length-1))})">复习 −</button>
+      <button class="btn ghost" onclick="draw(${DAY.energy},${d.review.length+1})">复习 +</button>
+      <span style="flex:1"></span>
+      <button class="btn warn" onclick="settle()">🌙 结算今天</button>
+    </div>
+    ${d.new.map(p=>row(p,false)).join('')}
+    ${d.review.length?`<h3 style="margin-top:16px">复习（薄弱/超期优先）</h3>${d.review.map(p=>row(p,true)).join('')}`:
+      '<div class="sm dim">薄弱池为空：还没有需要回炉的点</div>'}`;
+}
+async function draw(n, revN){
+  const exclude = (DAY.picked && DAY.energy===n) ? DAY.picked.new.map(p=>p.id) : [];
+  DAY.picked = await api('/api/draw', {count:n, review_count: revN==null?2:Math.min(6,Math.max(0,revN)), exclude});
+  DAY.energy = n;
+  DAY.stars = {}; DAY.smoke = {}; DAY.packet = {};
+  DAY.mode = 'drawn';
+  await api('/api/day/commit', {energy:n,
+    new_ids: DAY.picked.new.map(p=>p.id), review_ids: DAY.picked.review.map(p=>p.id)});
+  renderDay();
+}
+function setStar(el, i){
+  const box = el.parentElement, kids = [...box.children];
+  kids.forEach((k,idx)=>{ k.className = idx < i ? '' : 'off'; });
+  const pt = el.closest('.pt'), id = pt.querySelector('.id').textContent;
+  DAY.stars[id] = i;
+}
+function setSmoke(id, v){ DAY.smoke[id] = (DAY.smoke[id]===v ? undefined : v); renderDay(); }
+async function settle(){
+  const ids = [...DAY.picked.new, ...DAY.picked.review].map(p=>p.id);
+  const missing = ids.filter(id => !DAY.stars[id]);
+  if(missing.length && !confirm('还有 '+missing.length+' 个点未自评（'+missing.join(', ')+'），确定按原掌握度结算？')) return;
+  const updates = ids.map(id => ({
+    id, mastery: DAY.stars[id] || (ALL.points.find(p=>p.id===id)||{mastery:3}).mastery || 3,
+    smoke_passed: DAY.smoke[id] === undefined ? null : DAY.smoke[id],
+    packet_done: !!DAY.packet[id],
+  })).filter(u => u.smoke_passed !== null || u.mastery || u.packet_done);
+  const r = await api('/api/settle', {updates});
+  toast('已结算' + (r.committed ? ' · git 已记录' : ''), r.committed);
+  DAY.mode = 'settled';
+  await refresh(); switchTab('ov');
+}
+
+/* ---------------- 全表 ---------------- */
+async function loadAll(){
+  ALL = await api('/api/points');
+  const subs = [...new Set(ALL.points.map(p=>p.subject))];
+  $('#f-subj').innerHTML = '<option value="">全部科目</option>' +
+    subs.map(s=>`<option>${s}</option>`).join('');
+  renderAll();
+}
+function filterPoint(p){
+  const st = $('#f-st').value, q = $('#f-q').value.trim();
+  if($('#f-subj').value && p.subject !== $('#f-subj').value) return false;
+  if(q && !(p.id.includes(q.toUpperCase()) || p.name.includes(q))) return false;
+  const m = p.mastery;
+  if(st==='unread' && m>0) return false;
+  if(st==='thin' && !(m>0 && (m<=2 || p.overdue>0))) return false;
+  if(st==='read' && !(m===3)) return false;
+  if(st==='done' && !(m>=4)) return false;
+  if(st==='smoke' && !(p.smoke && p.smoke.passed===false)) return false;
+  return true;
+}
+function renderAll(){
+  if(!ALL) return;
+  let list = ALL.points.filter(filterPoint);
+  const sort = $('#f-sort').value;
+  const cmp = { mastery:(a,b)=>a.mastery-b.mastery || a.id.localeCompare(b.id),
+    overdue:(a,b)=>b.overdue-a.overdue || a.mastery-b.mastery,
+    age:(a,b)=>(b.age_days??-1)-(a.age_days??-1),
+    id:(a,b)=>a.id.localeCompare(b.id) }[sort];
+  list.sort(cmp);
+  $('#all-count').textContent = list.length + ' / ' + ALL.points.length + ' 个知识点';
+  $('#all-body').innerHTML = list.map(p=>`
+    <tr class="${p.mastery>0&&(p.mastery<=2||p.overdue>0)?'weak':''} ${openRow===p.id?'det':''}" id="tr-${p.id}">
+      <td style="font-family:monospace;color:var(--acc)">${p.id}</td>
+      <td style="white-space:normal;max-width:320px">${p.name}${p.zap?' ⚡':''}</td>
+      <td class="dim">${p.subject}</td><td><span class="tag ${p.priority}">${p.priority}</span></td>
+      <td>${p.proto}</td>
+      <td>${dots(p.mastery, true)}</td>
+      <td class="dim">${p.first_learned||'—'}</td>
+      <td class="dim">${daysTxt(p.age_days)}</td>
+      <td class="dim">${p.last_reviewed||'—'}</td>
+      <td class="dim">${p.since_review_days!=null?p.since_review_days+'天':'—'}${p.overdue>0?'<span style="color:var(--warn)">超'+Math.min(p.overdue,999)+'</span>':''}</td>
+      <td>${p.packet_done?'✓':'<span class="dim">—</span>'}</td>
+      <td><button class="btn ghost" style="padding:2px 10px;font-size:12px"
+        onclick="toggleHist('${p.id}')">${openRow===p.id?'收起':'历史'}</button></td>
+    </tr>
+    ${openRow===p.id?`<tr class="det"><td colspan="12">
+      <div class="hist">前置：${p.deps.length?p.deps.join(', '):'无'}<br>题包：${p.packet}<br>备注：${p.note||'—'}
+      ${histHtml(p.id)}</div></td></tr>`:''}
+  `).join('');
+}
+let openRow = null;
+function toggleHist(id){ openRow = openRow===id ? null : id; renderAll(); }
+function histHtml(id){
+  const p = ALL.points.find(x=>x.id===id);
+  if(!p) return '';
+  const h = p.history || [];
+  return '<br>历史：' + (h.length ? h.map(x=>`${x.date} ${x.event} ${x.from}→${x.to}`).join(' · ') : '（暂无记录）');
+}
+async function setStarRow(el, id, i){
+  const box = el.parentElement, kids = [...box.children];
+  kids.forEach((k,idx)=>{ k.className = idx < i ? '' : 'off'; });
+  await api('/api/adjust', {id, mastery:i});
+  toast(id + ' → ' + i + ' 级');
+  const p = ALL.points.find(x=>x.id===id);
+  p.mastery = i; p.proto = i<=2?'🔁':(i===3?(p.packet_done?'✍️':'📖'):(i===4?'✍️':(p.packet_done?'✅':'✍️')));
+}
+// 全表行内评分：把 dots 的 onclick 绑定为 setStarRow
+document.addEventListener('click', e=>{
+  const s = e.target.closest('#all-body .dots span');
+  if(!s) return;
+  const id = s.closest('tr').querySelector('td').textContent;
+  const i = [...s.parentElement.children].indexOf(s)+1;
+  setStarRow(s, id, i);
+}, true);
+
+/* ---------------- 框架 ---------------- */
+function switchTab(t){
+  ['ov','day','all'].forEach(k=>{
+    $('#view-'+k).style.display = k===t?'':'none';
+    $('#tab-'+k).classList.toggle('on', k===t);
+  });
+  if(t==='day' && !ALL) loadAll().then(renderDay);
+  else if(t==='day') renderDay();
+  if(t==='all' && !ALL) loadAll();
+}
+async function refresh(){ await loadOverview(); }
+refresh();
+setInterval(refresh, 60000);
+</script>
+</body>
+</html>
