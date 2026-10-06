@@ -4,50 +4,57 @@
 <meta charset="utf-8">
 <title>考研知识点看板</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="static/echarts.min.js"></script>
 <style>
 :root{
-  --bg:#0f1115; --card:#171a21; --line:#262b36; --txt:#d7dce4; --dim:#8b93a3;
-  --acc:#4f8cff; --ok:#3fb96f; --warn:#e0a03c; --bad:#e05c5c; --zap:#e6c35c;
+  --bg:#f5f7fa; --card:#ffffff; --line:#e5e9f0; --txt:#1f2328; --dim:#667085;
+  --acc:#2f6fed; --ok:#1a7f4b; --warn:#d97706; --bad:#dc2626; --zap:#b45309;
+  --red-bg:#fef2f2; --shadow:0 1px 3px rgba(16,24,40,.06);
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--txt);
   font:14px/1.6 "Segoe UI",system-ui,"Microsoft YaHei",sans-serif}
 header{display:flex;align-items:center;gap:16px;padding:14px 22px;
-  border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:9}
+  border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:9;
+  box-shadow:var(--shadow)}
 header h1{font-size:16px;margin:0;font-weight:600}
 nav{display:flex;gap:6px}
 nav button{background:none;border:1px solid transparent;color:var(--dim);
   padding:6px 14px;border-radius:8px;cursor:pointer;font-size:14px}
-nav button.on{color:var(--txt);border-color:var(--acc);background:rgba(79,140,255,.12)}
+nav button:hover{color:var(--txt);background:#f0f3f8}
+nav button.on{color:var(--acc);border-color:var(--acc);background:#eaf1fe}
 #today-badge{margin-left:auto;font-size:13px;color:var(--dim)}
-main{max-width:1100px;margin:0 auto;padding:22px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+main{max-width:1180px;margin:0 auto;padding:22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow)}
 .grid{display:grid;gap:14px}
 .g4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-.g2{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
-.kpi .v{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
+.g3{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(380px,1fr))}
+.kpi .v{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--txt)}
 .kpi .l{color:var(--dim);font-size:12.5px}
 .kpi .s{font-size:12px;margin-top:4px}
-.bar{height:10px;background:#2a3242;border-radius:5px;overflow:hidden;margin-top:8px;outline:1px solid #333c4e}
-.bar i{display:block;height:100%;background:linear-gradient(90deg,#5e9bff,#4f8cff);border-radius:5px;min-width:3px}
-.bar i.floor{background:linear-gradient(90deg,var(--acc) var(--p,70%),#2c3242 var(--p,70%))}
+.bar{height:10px;background:#eef1f6;border-radius:5px;overflow:hidden;margin-top:8px;outline:1px solid var(--line)}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#5e9bff,#2f6fed);border-radius:5px;min-width:3px}
 h3{margin:0 0 10px;font-size:14.5px;color:var(--txt)}
 .dim{color:var(--dim)} .sm{font-size:12.5px}
-.tag{display:inline-block;padding:1px 8px;border-radius:6px;font-size:12px;border:1px solid var(--line);color:var(--dim)}
-.tag.A{color:#ff9d9d;border-color:#5a3434}.tag.B{color:#9dc3ff;border-color:#2f4560}.tag.C{color:#c7c7c7}
+.tag{display:inline-block;padding:1px 8px;border-radius:6px;font-size:12px;border:1px solid var(--line);color:var(--dim);background:#fafbfd}
+.tag.A{color:#dc2626;border-color:#f3c1c1;background:#fef5f5}
+.tag.B{color:#2f6fed;border-color:#c3d7fb;background:#f4f8ff}
+.tag.C{color:#667085}
 .zap{color:var(--zap)}
-.dots span{cursor:pointer;font-size:16px;letter-spacing:2px;user-select:none}
-.dots span.off{color:#333a48}
+.dots span{cursor:pointer;font-size:16px;letter-spacing:2px;user-select:none;color:var(--acc)}
+.dots span.off{color:#d3d9e2}
 .btn{background:var(--acc);border:none;color:#fff;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:14px}
-.btn.ghost{background:none;border:1px solid var(--line);color:var(--txt)}
+.btn:hover{background:#2861d4}
+.btn.ghost{background:#fff;border:1px solid var(--line);color:var(--txt)}
 .btn.warn{background:var(--warn)}
-.btn:disabled{opacity:.4;cursor:not-allowed}
 .num-pick{display:flex;gap:10px;margin:14px 0}
 .num-pick button{width:56px;height:56px;font-size:22px;border-radius:12px;
-  border:1px solid var(--line);background:#1c212b;color:var(--txt);cursor:pointer}
-.num-pick button:hover{border-color:var(--acc)}
+  border:1px solid var(--line);background:#fff;color:var(--txt);cursor:pointer}
+.num-pick button:hover{border-color:var(--acc);background:#f4f8ff}
 .num-pick button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
-.pt{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:10px;background:#191d26}
+.pt{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:10px;background:#fbfcfe}
 .pt .hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .pt .id{font-family:Consolas,monospace;color:var(--acc);font-weight:700}
 .pt .nm{font-weight:600}
@@ -55,28 +62,35 @@ h3{margin:0 0 10px;font-size:14.5px;color:var(--txt)}
 .pt .ops{margin-top:8px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .smoke-b{display:flex;gap:6px}
 .smoke-b button{font-size:12px;padding:3px 10px;border-radius:6px;cursor:pointer;
-  border:1px solid var(--line);background:none;color:var(--dim)}
-.smoke-b button.on.yes{color:var(--ok);border-color:var(--ok)}
-.smoke-b button.on.no{color:var(--bad);border-color:var(--bad)}
+  border:1px solid var(--line);background:#fff;color:var(--dim)}
+.smoke-b button.on.yes{color:var(--ok);border-color:var(--ok);background:#f0faf4}
+.smoke-b button.on.no{color:var(--bad);border-color:var(--bad);background:var(--red-bg)}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
-th{color:var(--dim);font-weight:500;cursor:pointer;user-select:none}
-tr.weak td{background:rgba(224,92,92,.05)}
+th{color:var(--dim);font-weight:500;cursor:pointer;user-select:none;background:#fafbfd}
+tr:hover td{background:#f6f8fb}
+tr.weak td{background:var(--red-bg)}
 tr.det{white-space:normal}
 .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-select,input[type=text]{background:#1c212b;border:1px solid var(--line);color:var(--txt);
+select,input[type=text]{background:#fff;border:1px solid var(--line);color:var(--txt);
   border-radius:8px;padding:6px 10px;font-size:13px}
-.hist{margin-top:8px;padding:8px 12px;background:#141821;border-radius:8px;font-size:12.5px;color:var(--dim)}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
-  background:var(--ok);color:#fff;padding:10px 22px;border-radius:10px;display:none;z-index:99}
-.warnbox{background:rgba(224,160,60,.1);border:1px solid rgba(224,160,60,.4);
-  color:var(--warn);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px}
-.mini-bars{display:flex;align-items:flex-end;gap:10px;height:90px;padding-top:6px}
-.mini-bars .b{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
-.mini-bars .b i{width:100%;background:var(--acc);border-radius:4px 4px 0 0;min-height:2px}
-.mini-bars .b span{font-size:11px;color:var(--dim)}
-.lgd{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--dim)}
-.lgd b{color:var(--txt);font-variant-numeric:tabular-nums}
+  background:var(--ok);color:#fff;padding:10px 22px;border-radius:10px;display:none;z-index:99;
+  box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.warnbox{background:#fffbeb;border:1px solid #fde68a;color:#92400e;
+  border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px}
+.chart{height:250px;width:100%}
+.lgd{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--dim);align-items:center}
+.lgd i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+/* 知识地图热力图 */
+#heatmap .blk{margin-bottom:14px}
+#heatmap .blk h4{margin:0 0 6px;font-size:12.5px;color:var(--dim);font-weight:500}
+#heatmap .cells{display:grid;grid-template-columns:repeat(auto-fill,minmax(15px,1fr));gap:3px}
+#heatmap .c{height:15px;border-radius:3px;background:#e6eaf0;cursor:default}
+#heatmap .c.m1,#heatmap .c.m2{background:#dc2626}
+#heatmap .c.m3{background:#f59e0b}
+#heatmap .c.m4{background:#65b36b}
+#heatmap .c.m5{background:#1a7f4b}
 </style>
 </head>
 <body>
@@ -96,14 +110,21 @@ select,input[type=text]{background:#1c212b;border:1px solid var(--line);color:va
   <section id="view-ov">
     <div class="grid g4" id="kpis"></div>
     <div class="grid g2">
-      <div class="card" id="subj-card"><h3>各科覆盖率（📖及以上，底线 70% / 目标 95%）</h3><div id="subj"></div></div>
-      <div class="card">
-        <h3>状态分布</h3>
-        <div class="lgd" id="dist"></div>
-        <h3 style="margin-top:18px">近4周吞吐（新学📖/周）</h3>
-        <div class="mini-bars" id="weeks"></div>
-        <div class="sm dim" style="margin-top:10px">协议参考值：理解期 17~25📖/周 · 11.16 校准线 15📖/周</div>
-      </div>
+      <div class="card"><h3>状态分布</h3><div id="ch-donut" class="chart"></div></div>
+      <div class="card"><h3>进度趋势 <span class="dim sm">周新学 📖 / 累计 vs 理想轨迹</span></h3>
+        <div id="ch-trend" class="chart" style="height:290px"></div></div>
+    </div>
+    <div class="card">
+      <h3>知识地图 <span class="dim sm">243点掌握度 · 红=薄弱 绿=精通 灰=未学（悬停看详情）</span></h3>
+      <div id="heatmap"></div>
+    </div>
+    <div class="grid g3">
+      <div class="card"><h3>复习到期 <span class="dim sm" id="due-note"></span></h3><div id="ch-due" class="chart"></div></div>
+      <div class="card"><h3>掌握度分布</h3><div id="ch-hist" class="chart"></div></div>
+      <div class="card"><h3>每日能量（1~5）</h3><div id="ch-energy" class="chart"></div></div>
+    </div>
+    <div class="card">
+      <h3>各科覆盖率（📖及以上，底线 70% / 目标 95%）</h3><div id="subj"></div>
     </div>
   </section>
 
@@ -151,7 +172,10 @@ select,input[type=text]{background:#1c212b;border:1px solid var(--line);color:va
 
 <script>
 const $ = s => document.querySelector(s);
-let OV = null, ALL = null, DAY = {energy:null, picked:null, mode:'idle'};
+let OV = null, ALL = null, TR = null, DAY = {energy:null, picked:null, mode:'idle'};
+const CHARTS = {};
+const C = {unread:'#d9dfe8', thin:'#dc2626', read:'#f59e0b', done:'#65b36b',
+           master:'#1a7f4b', acc:'#2f6fed', ideal:'#dc2626'};
 
 function toast(msg, ok=true){
   const t = $('#toast'); t.textContent = msg;
@@ -166,6 +190,11 @@ async function api(path, body){
   return r.json();
 }
 function daysTxt(n){ return n==null ? '—' : n + '天'; }
+function chart(id){
+  if(!CHARTS[id]) CHARTS[id] = echarts.init(document.getElementById(id));
+  return CHARTS[id];
+}
+window.addEventListener('resize', ()=>Object.values(CHARTS).forEach(c=>c.resize()));
 
 /* ---------------- 总览 ---------------- */
 async function loadOverview(){
@@ -195,15 +224,100 @@ async function loadOverview(){
     <div style="margin-bottom:10px">
       <div class="sm"><b>${k}</b>　${s.read}/${s.total}（${s.read_pct}%）
         <span class="dim">底线${OV.subject_floor_pct}% ${s.read_pct>=OV.subject_floor_pct?'✓':'✗'}</span></div>
-      <div class="bar"><i class="floor" style="width:${Math.min(100,s.read_pct)}%;--p:${OV.subject_floor_pct}%"></i></div>
+      <div class="bar"><i style="width:${Math.min(100,s.read_pct)}%"></i></div>
     </div>`).join('');
-  $('#dist').innerHTML = ['⬜','🔁','📖','✍️','✅','⚠️'].map(k=>
-    `<span>${k} <b>${OV.dist[k]||0}</b></span>`).join('') +
-    `<span>题包✍️+ <b>${OV.packet_pct}%</b></span>`;
-  const mx = Math.max(15, ...OV.last4_weeks.map(x=>x[1]));
-  $('#weeks').innerHTML = (OV.last4_weeks.length? OV.last4_weeks : [['',0]]).map(([w,c])=>`
-    <div class="b"><span style="color:var(--txt);font-weight:600">${c}</span>
-      <i style="height:${Math.max(3,c*72/mx)}px"></i><span>${w||'—'}</span></div>`).join('');
+  await Promise.all([loadTrends(), loadHeatmap()]);
+}
+
+async function loadTrends(){
+  TR = await api('/api/trends');
+  const d = OV.dist;
+  // 环形图
+  chart('ch-donut').setOption({
+    tooltip:{trigger:'item', formatter:'{b}: {c} ({d}%)'},
+    series:[{type:'pie', radius:['52%','76%'], center:['50%','50%'],
+      label:{show:false},
+      data:[
+        {name:'⬜ 未学', value:d['⬜']||0, itemStyle:{color:C.unread}},
+        {name:'🔁 薄弱', value:d['🔁']||0, itemStyle:{color:C.thin}},
+        {name:'📖 已理解', value:d['📖']||0, itemStyle:{color:C.read}},
+        {name:'✍️ 已刷题', value:d['✍️']||0, itemStyle:{color:C.done}},
+        {name:'✅ 已掌握', value:d['✅']||0, itemStyle:{color:C.master}},
+      ].filter(x=>x.value>0 || x.name.startsWith('⬜'))},
+      {type:'pie', radius:['0%','0%'], label:{show:true, position:'center',
+        formatter:`${OV.read_pct}%\n📖及以上`, fontSize:22, fontWeight:700, color:'#1f2328',
+        lineHeight:30}, data:[{value:1}], silent:true}],
+    graphic:[]});
+  // 主趋势组合图
+  const wk = TR.weeks;
+  chart('ch-trend').setOption({
+    tooltip:{trigger:'axis'},
+    legend:{data:['周新学','累计📖','理想轨迹','周复习'], top:0, textStyle:{color:'#667085', fontSize:12}},
+    grid:{left:44, right:40, top:34, bottom:26},
+    xAxis:{type:'category', data:wk.map(x=>x.week),
+      axisLabel:{color:'#667085', fontSize:11}},
+    yAxis:[
+      {type:'value', name:'累计', max:v=>Math.max(243, v.max), axisLabel:{color:'#667085',fontSize:11}, splitLine:{lineStyle:{color:'#eef1f6'}}},
+      {type:'value', name:'周数', axisLabel:{color:'#667085',fontSize:11}, splitLine:{show:false}}],
+    series:[
+      {name:'周新学', type:'bar', data:wk.map(x=>x.new), itemStyle:{color:C.acc, borderRadius:[3,3,0,0]}, barMaxWidth:26},
+      {name:'累计📖', type:'line', smooth:true, data:wk.map(x=>x.cum),
+        lineStyle:{color:C.master, width:2.5}, itemStyle:{color:C.master}, symbolSize:5},
+      {name:'理想轨迹', type:'line', data:wk.map(x=>x.ideal), symbol:'none',
+        lineStyle:{color:C.ideal, type:'dashed', width:1.5},
+        tooltip:{show:false}, silent:true, endLabel:{show:true, formatter:'红线目标 '+TR.target, color:C.ideal, fontSize:11}},
+      {name:'周复习', type:'line', yAxisIndex:1, data:wk.map(x=>x.rev), symbol:'circle', symbolSize:4,
+        lineStyle:{color:'#9ca8ba', width:1.5, type:'dotted'}, itemStyle:{color:'#9ca8ba'}}
+    ]});
+  // 复习到期
+  $('#due-note').textContent = TR.overdue_now ? `今日逾期 ${TR.overdue_now} 个` : '当前无逾期';
+  const dl = TR.due_labels.map(x=>x.slice(5));
+  chart('ch-due').setOption({
+    tooltip:{trigger:'axis'},
+    grid:{left:34, right:12, top:22, bottom:24},
+    xAxis:{type:'category', data:dl, axisLabel:{color:'#667085', fontSize:10, interval:4}},
+    yAxis:{type:'value', axisLabel:{color:'#667085',fontSize:11}, splitLine:{lineStyle:{color:'#eef1f6'}}},
+    series:[{type:'bar', data:TR.due_series,
+      itemStyle:{color:p=>p.value>3?C.thin:'#f0a35e', borderRadius:[3,3,0,0]}, barMaxWidth:14}]});
+  // 掌握度直方图
+  chart('ch-hist').setOption({
+    tooltip:{},
+    grid:{left:34, right:12, top:22, bottom:24},
+    xAxis:{type:'category', data:['1 薄弱','2 模糊','3 理解','4 熟练','5 精通'],
+      axisLabel:{color:'#667085', fontSize:11}},
+    yAxis:{type:'value', axisLabel:{color:'#667085',fontSize:11}, splitLine:{lineStyle:{color:'#eef1f6'}}},
+    series:[{type:'bar', barMaxWidth:44,
+      data:[1,2,3,4,5].map(m=>({value:TR.hist[String(m)],
+        itemStyle:{color:[C.thin,'#f0725e',C.read,C.done,C.master][m-1], borderRadius:[4,4,0,0]}}))}]});
+  // 能量趋势
+  const en = TR.energy;
+  chart('ch-energy').setOption({
+    tooltip:{trigger:'axis'},
+    grid:{left:30, right:12, top:18, bottom:24},
+    xAxis:{type:'category', data:en.map(x=>x.date.slice(5)), axisLabel:{color:'#667085', fontSize:10}},
+    yAxis:{type:'value', min:1, max:5, axisLabel:{color:'#667085',fontSize:11}, splitLine:{lineStyle:{color:'#eef1f6'}}},
+    series:[{type:'line', data:en.map(x=>x.energy), smooth:true,
+      lineStyle:{color:'#8b5cf6', width:2}, itemStyle:{color:'#8b5cf6'},
+      areaStyle:{color:'rgba(139,92,246,.10)'}, symbolSize:5,
+      markLine:en.length?{silent:true, symbol:'none', label:{show:false},
+        data:[{yAxis:3.4, lineStyle:{color:'#d8ddc8', type:'dashed'}}]}:undefined}]});
+}
+
+async function loadHeatmap(){
+  if(!ALL) ALL = await api('/api/points');
+  const bySubj = {};
+  ALL.points.forEach(p=>{(bySubj[p.subject] = bySubj[p.subject] || []).push(p)});
+  $('#heatmap').innerHTML = Object.entries(bySubj).map(([sub, ps])=>`
+    <div class="blk"><h4>${sub}（${ps.filter(x=>x.mastery>=3).length}/${ps.length}）</h4>
+      <div class="cells">${ps.map(p=>{
+        const cls = p.mastery>0 ? ` m${p.mastery}` : '';
+        const tip = `${p.id} ${p.name}｜${p.mastery?'掌握度'+p.mastery:'未学'}${p.since_review_days!=null?'｜距上次复习'+p.since_review_days+'天':''}${p.overdue>0?'｜超期':''}`;
+        return `<div class="c${cls}" title="${tip.replace(/"/g,'&quot;')}"></div>`;}).join('')}
+      </div></div>`).join('') +
+    `<div class="lgd" style="margin-top:4px">
+      <span><i style="background:#e6eaf0"></i>未学</span><span><i style="background:${C.thin}"></i>1~2 薄弱</span>
+      <span><i style="background:${C.read}"></i>3 理解</span><span><i style="background:${C.done}"></i>4 熟练</span>
+      <span><i style="background:${C.master}"></i>5 精通</span></div>`;
 }
 
 /* ---------------- 今日 ---------------- */
@@ -226,12 +340,11 @@ function renderDay(){
   }
   if(DAY.mode === 'idle' && !t.drawn){
     c.innerHTML = `<h3>开始今天：选一个数字（= 今天要学的新知识点个数）</h3>
-      <div class="sm dim" style="margin-bottom:4px">抽取规则：可学池（前置依赖已📖）内随机 · A级配额≥60% · 附带 2 个薄弱/超期复习点</div>
+      <div class="sm dim" style="margin-bottom:4px">抽取规则：同学科内依赖已📖 · A级配额≥60% · 附带 2 个薄弱/超期复习点</div>
       <div class="num-pick">${[1,2,3,4,5].map(n=>
         `<button onclick="draw(${n})">${n}</button>`).join('')}</div>`;
     return;
   }
-  // drawn 视图：任务卡 + 结算
   const d = DAY.picked || {new:[], review:[]};
   const row = (p, isRev) => {
     const st = DAY.stars[p.id] || p.mastery || 0;
@@ -241,7 +354,7 @@ function renderDay(){
         <span class="tag ${p.priority}">${p.priority}</span>
         ${p.zap?'<span class="zap" title="实战加成">⚡</span>':''}
         <span class="tag">${p.subject}</span>
-        ${isRev?`<span class="tag" style="color:var(--warn)">复习</span>
+        ${isRev?`<span class="tag" style="color:var(--warn);border-color:#f3d9a8">复习</span>
           <span class="sm dim">当前掌握 ${p.mastery} · 距上次 ${daysTxt(p.since_review_days)}${p.overdue>0?' · 超期'+p.overdue+'天':''}</span>`:''}
       </div>
       <div class="meta">题包：${p.packet}　${p.note?('· '+p.note):''}</div>
@@ -290,14 +403,16 @@ async function settle(){
   const ids = [...DAY.picked.new, ...DAY.picked.review].map(p=>p.id);
   const missing = ids.filter(id => !DAY.stars[id]);
   if(missing.length && !confirm('还有 '+missing.length+' 个点未自评（'+missing.join(', ')+'），确定按原掌握度结算？')) return;
+  const pool = DAY.picked.new.concat(DAY.picked.review);
   const updates = ids.map(id => ({
-    id, mastery: DAY.stars[id] || (ALL.points.find(p=>p.id===id)||{mastery:3}).mastery || 3,
+    id, mastery: DAY.stars[id] || (pool.find(p=>p.id===id)||{mastery:3}).mastery || 3,
     smoke_passed: DAY.smoke[id] === undefined ? null : DAY.smoke[id],
     packet_done: !!DAY.packet[id],
-  })).filter(u => u.smoke_passed !== null || u.mastery || u.packet_done);
+  }));
   const r = await api('/api/settle', {updates});
   toast('已结算' + (r.committed ? ' · git 已记录' : ''), r.committed);
   DAY.mode = 'settled';
+  ALL = null;                       // 强制重载（热力图/全表）
   await refresh(); switchTab('ov');
 }
 
@@ -348,14 +463,12 @@ function renderAll(){
     </tr>
     ${openRow===p.id?`<tr class="det"><td colspan="12">
       <div class="hist">前置：${p.deps.length?p.deps.join(', '):'无'}<br>题包：${p.packet}<br>备注：${p.note||'—'}
-      ${histHtml(p.id)}</div></td></tr>`:''}
+      ${histHtml(p)}</div></td></tr>`:''}
   `).join('');
 }
 let openRow = null;
 function toggleHist(id){ openRow = openRow===id ? null : id; renderAll(); }
-function histHtml(id){
-  const p = ALL.points.find(x=>x.id===id);
-  if(!p) return '';
+function histHtml(p){
   const h = p.history || [];
   return '<br>历史：' + (h.length ? h.map(x=>`${x.date} ${x.event} ${x.from}→${x.to}`).join(' · ') : '（暂无记录）');
 }
@@ -367,7 +480,6 @@ async function setStarRow(el, id, i){
   const p = ALL.points.find(x=>x.id===id);
   p.mastery = i; p.proto = i<=2?'🔁':(i===3?(p.packet_done?'✍️':'📖'):(i===4?'✍️':(p.packet_done?'✅':'✍️')));
 }
-// 全表行内评分：把 dots 的 onclick 绑定为 setStarRow
 document.addEventListener('click', e=>{
   const s = e.target.closest('#all-body .dots span');
   if(!s) return;
@@ -385,6 +497,7 @@ function switchTab(t){
   if(t==='day' && !ALL) loadAll().then(renderDay);
   else if(t==='day') renderDay();
   if(t==='all' && !ALL) loadAll();
+  if(t==='ov') Object.values(CHARTS).forEach(c=>c.resize());
 }
 async function refresh(){ await loadOverview(); }
 refresh();

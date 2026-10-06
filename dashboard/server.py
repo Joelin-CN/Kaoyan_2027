@@ -376,6 +376,88 @@ def api_week(defs, state, today):
             "smoke_fail_rate_pct": round(smoke_fail * 100.0 / max(1, len(new_pts)), 1)}
 
 
+EPOCH = date(2026, 10, 6)      # 建档日（理想轨迹起点）
+
+
+def _monday(d):
+    return d - timedelta(days=d.weekday())
+
+
+def api_trends(defs, state, today):
+    """图表数据：周吞吐/累计/理想轨迹、复习到期分布、掌握度直方图、能量序列"""
+    pts = state["points"]
+    # --- 周聚合 ---
+    wk_new, wk_rev = {}, {}
+    for pid, ps in pts.items():
+        fl = ps.get("first_learned")
+        if fl:
+            try:
+                wk_new[_monday(datetime.strptime(fl, "%Y-%m-%d").date())] = \
+                    wk_new.get(_monday(datetime.strptime(fl, "%Y-%m-%d").date()), 0) + 1
+            except Exception:
+                pass
+        for h in ps.get("history", []):
+            if h.get("event") == "review":
+                try:
+                    m2 = _monday(datetime.strptime(h["date"], "%Y-%m-%d").date())
+                    wk_rev[m2] = wk_rev.get(m2, 0) + 1
+                except Exception:
+                    pass
+    start_mon = min([_monday(EPOCH), _monday(today)] + list(wk_new.keys()))
+    end_mon = _monday(today)
+    weeks, cum, acc = [], [], 0
+    m = start_mon
+    total_weeks = max(1, (_monday(REDLINE_UNDERSTAND) - start_mon).days // 7 + 1)
+    target = int(len(defs) * UNDERSTAND_TARGET)
+    while m <= end_mon:
+        wnew = wk_new.get(m, 0)
+        acc += wnew
+        wk_idx = (m - start_mon).days // 7
+        ideal = round(target * wk_idx / total_weeks)
+        weeks.append(m.strftime("%m/%d"))
+        cum.append({"week": m.strftime("%m/%d"), "new": wnew,
+                    "rev": wk_rev.get(m, 0), "cum": acc, "ideal": ideal})
+        m += timedelta(days=7)
+
+    # --- 复习到期（未来30天） ---
+    due = {}
+    overdue_now = 0
+    for pid, ps in pts.items():
+        mm = ps.get("mastery", 0)
+        if mm <= 0:
+            continue
+        if mm <= 2:
+            overdue_now += 1
+            continue
+        lr = ps.get("last_reviewed")
+        try:
+            lr_d = datetime.strptime(lr, "%Y-%m-%d").date()
+        except Exception:
+            overdue_now += 1
+            continue
+        dd = lr_d + timedelta(days=REVIEW_CYCLE.get(mm, 30))
+        if dd <= today:
+            overdue_now += 1
+        elif (dd - today).days <= 30:
+            k = dd.isoformat()
+            due[k] = due.get(k, 0) + 1
+    horizon = [ (today + timedelta(days=i)).isoformat() for i in range(0, 31) ]
+    due_series = [due.get(d0, 0) for d0 in horizon]
+
+    # --- 掌握度直方图 / 能量序列 ---
+    hist = {str(i): 0 for i in range(1, 6)}
+    for pid, ps in pts.items():
+        mm = ps.get("mastery", 0)
+        if 1 <= mm <= 5:
+            hist[str(mm)] += 1
+    energy = sorted([{"date": k, "energy": v.get("energy")}
+                     for k, v in state["days"].items() if v.get("energy")])
+
+    return {"weeks": cum, "due_labels": horizon, "due_series": due_series,
+            "overdue_now": overdue_now, "hist": hist, "energy": energy,
+            "redline": REDLINE_UNDERSTAND.isoformat(), "target": target}
+
+
 # ---------------- HTTP ----------------
 DEFS, WARNS = {}, []
 
@@ -412,6 +494,8 @@ class Handler(SimpleHTTPRequestHandler):
             })
         if path == "/api/week":
             return self._json(api_week(DEFS, state, today))
+        if path == "/api/trends":
+            return self._json(api_trends(DEFS, state, today))
         return super().do_GET()
 
     def do_POST(self):
