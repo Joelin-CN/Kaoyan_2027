@@ -123,6 +123,8 @@ def save_state(state):
 
 
 def git_commit(msg):
+    """结算/调分后自动备份：本地 commit + push 到 GitHub。
+    push 静默失败不阻塞（断网时本地照常记录，下次联网的任意一次结算补推积压）。"""
     if not AUTO_COMMIT:
         return False
     try:
@@ -131,9 +133,16 @@ def git_commit(msg):
                        capture_output=True, timeout=15)
         r = subprocess.run(["git", "commit", "-m", msg], cwd=ROOT,
                            capture_output=True, text=True, timeout=15)
-        return r.returncode == 0
+        if r.returncode != 0:
+            return False
     except Exception:
         return False
+    try:
+        subprocess.run(["git", "push"], cwd=ROOT,
+                       capture_output=True, timeout=30)
+    except Exception:
+        pass
+    return True
 
 
 # ---------------- 掌握度 → 协议状态换算 ----------------

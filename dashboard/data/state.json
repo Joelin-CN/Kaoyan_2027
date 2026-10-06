@@ -1,0 +1,17 @@
+{
+ "version": 1,
+ "points": {},
+ "days": {
+  "2026-10-06": {
+   "energy": 4,
+   "new_ids": [
+    "M11",
+    "D01",
+    "D30",
+    "C01"
+   ],
+   "review_ids": [],
+   "settled": false
+  }
+ }
+}
