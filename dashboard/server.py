@@ -405,18 +405,22 @@ def api_trends(defs, state, today):
                     pass
     start_mon = min([_monday(EPOCH), _monday(today)] + list(wk_new.keys()))
     end_mon = _monday(today)
-    weeks, cum, acc = [], [], 0
+    red_mon = _monday(REDLINE_UNDERSTAND)
+    weeks, acc = [], 0
     m = start_mon
-    total_weeks = max(1, (_monday(REDLINE_UNDERSTAND) - start_mon).days // 7 + 1)
+    total_weeks = max(1, (red_mon - start_mon).days // 7 + 1)
     target = int(len(defs) * UNDERSTAND_TARGET)
-    while m <= end_mon:
+    while m <= red_mon:                      # x轴延伸到红线周，理想轨迹画向未来
         wnew = wk_new.get(m, 0)
-        acc += wnew
+        future = m > end_mon
+        if not future:
+            acc += wnew
         wk_idx = (m - start_mon).days // 7
-        ideal = round(target * wk_idx / total_weeks)
-        weeks.append(m.strftime("%m/%d"))
-        cum.append({"week": m.strftime("%m/%d"), "new": wnew,
-                    "rev": wk_rev.get(m, 0), "cum": acc, "ideal": ideal})
+        weeks.append({"week": m.strftime("%m/%d"),
+                      "new": None if future else wnew,
+                      "rev": None if future else wk_rev.get(m, 0),
+                      "cum": None if future else acc,
+                      "ideal": round(target * wk_idx / total_weeks)})
         m += timedelta(days=7)
 
     # --- 复习到期（未来30天） ---
@@ -453,7 +457,7 @@ def api_trends(defs, state, today):
     energy = sorted([{"date": k, "energy": v.get("energy")}
                      for k, v in state["days"].items() if v.get("energy")])
 
-    return {"weeks": cum, "due_labels": horizon, "due_series": due_series,
+    return {"weeks": weeks, "due_labels": horizon, "due_series": due_series,
             "overdue_now": overdue_now, "hist": hist, "energy": energy,
             "redline": REDLINE_UNDERSTAND.isoformat(), "target": target}
 

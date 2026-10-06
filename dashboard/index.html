@@ -218,8 +218,9 @@ async function loadOverview(){
       <div class="v" style="font-size:18px;padding-top:8px">${dayStat}</div>
       <div class="s dim">${t.energy ? '档位 '+t.energy+' · 新'+t.new_ids.length+' 复习'+t.review_ids.length : '去「今日」开始抽取'}</div></div>
     <div class="card kpi"><div class="l">本周吞吐 / 薄弱池</div>
-      <div class="v">${OV.this_week_new} <span style="font-size:16px;color:var(--dim)">/ ${OV.thin_pool_size}</span></div>
-      <div class="s dim">新学📖数 / 待回炉点数</div></div>`;
+      <div class="v">${OV.this_week_new}<span style="font-size:15px;color:var(--dim)"> 新学</span>
+        · ${OV.thin_pool_size}<span style="font-size:15px;color:var(--dim)"> 待回炉</span></div>
+      <div class="s dim">本周新学📖数 / 需回炉点总数</div></div>`;
   $('#subj').innerHTML = Object.entries(OV.subjects).map(([k,s])=>`
     <div style="margin-bottom:10px">
       <div class="sm"><b>${k}</b>　${s.read}/${s.total}（${s.read_pct}%）
@@ -235,7 +236,7 @@ async function loadTrends(){
   // 环形图
   chart('ch-donut').setOption({
     tooltip:{trigger:'item', formatter:'{b}: {c} ({d}%)'},
-    series:[{type:'pie', radius:['52%','76%'], center:['50%','50%'],
+    series:[{type:'pie', radius:['56%','82%'], center:['50%','50%'],
       label:{show:false},
       data:[
         {name:'⬜ 未学', value:d['⬜']||0, itemStyle:{color:C.unread}},
@@ -258,7 +259,7 @@ async function loadTrends(){
       axisLabel:{color:'#667085', fontSize:11}},
     yAxis:[
       {type:'value', name:'累计', max:v=>Math.max(243, v.max), axisLabel:{color:'#667085',fontSize:11}, splitLine:{lineStyle:{color:'#eef1f6'}}},
-      {type:'value', name:'周数', axisLabel:{color:'#667085',fontSize:11}, splitLine:{show:false}}],
+      {type:'value', name:'复习', axisLabel:{color:'#667085',fontSize:11}, splitLine:{show:false}}],
     series:[
       {name:'周新学', type:'bar', data:wk.map(x=>x.new), itemStyle:{color:C.acc, borderRadius:[3,3,0,0]}, barMaxWidth:26},
       {name:'累计📖', type:'line', smooth:true, data:wk.map(x=>x.cum),
@@ -276,7 +277,7 @@ async function loadTrends(){
     tooltip:{trigger:'axis'},
     grid:{left:34, right:12, top:22, bottom:24},
     xAxis:{type:'category', data:dl, axisLabel:{color:'#667085', fontSize:10, interval:4}},
-    yAxis:{type:'value', axisLabel:{color:'#667085',fontSize:11}, splitLine:{lineStyle:{color:'#eef1f6'}}},
+    yAxis:{type:'value', minInterval:1, axisLabel:{color:'#667085',fontSize:11}, splitLine:{lineStyle:{color:'#eef1f6'}}},
     series:[{type:'bar', data:TR.due_series,
       itemStyle:{color:p=>p.value>3?C.thin:'#f0a35e', borderRadius:[3,3,0,0]}, barMaxWidth:14}]});
   // 掌握度直方图
@@ -285,7 +286,7 @@ async function loadTrends(){
     grid:{left:34, right:12, top:22, bottom:24},
     xAxis:{type:'category', data:['1 薄弱','2 模糊','3 理解','4 熟练','5 精通'],
       axisLabel:{color:'#667085', fontSize:11}},
-    yAxis:{type:'value', axisLabel:{color:'#667085',fontSize:11}, splitLine:{lineStyle:{color:'#eef1f6'}}},
+    yAxis:{type:'value', minInterval:1, axisLabel:{color:'#667085',fontSize:11}, splitLine:{lineStyle:{color:'#eef1f6'}}},
     series:[{type:'bar', barMaxWidth:44,
       data:[1,2,3,4,5].map(m=>({value:TR.hist[String(m)],
         itemStyle:{color:[C.thin,'#f0725e',C.read,C.done,C.master][m-1], borderRadius:[4,4,0,0]}}))}]});
@@ -298,9 +299,10 @@ async function loadTrends(){
     yAxis:{type:'value', min:1, max:5, axisLabel:{color:'#667085',fontSize:11}, splitLine:{lineStyle:{color:'#eef1f6'}}},
     series:[{type:'line', data:en.map(x=>x.energy), smooth:true,
       lineStyle:{color:'#8b5cf6', width:2}, itemStyle:{color:'#8b5cf6'},
-      areaStyle:{color:'rgba(139,92,246,.10)'}, symbolSize:5,
+      symbol:'circle', symbolSize:9,
+      areaStyle:{color:'rgba(139,92,246,.10)'},
       markLine:en.length?{silent:true, symbol:'none', label:{show:false},
-        data:[{yAxis:3.4, lineStyle:{color:'#d8ddc8', type:'dashed'}}]}:undefined}]});
+        data:[{yAxis:3.4, lineStyle:{color:'#c8cede', type:'dashed'}}]}:undefined}]});
 }
 
 async function loadHeatmap(){
@@ -419,10 +421,13 @@ async function settle(){
 /* ---------------- 全表 ---------------- */
 async function loadAll(){
   ALL = await api('/api/points');
+  fillFilters();
+  renderAll();
+}
+function fillFilters(){
   const subs = [...new Set(ALL.points.map(p=>p.subject))];
   $('#f-subj').innerHTML = '<option value="">全部科目</option>' +
     subs.map(s=>`<option>${s}</option>`).join('');
-  renderAll();
 }
 function filterPoint(p){
   const st = $('#f-st').value, q = $('#f-q').value.trim();
@@ -494,9 +499,8 @@ function switchTab(t){
     $('#view-'+k).style.display = k===t?'':'none';
     $('#tab-'+k).classList.toggle('on', k===t);
   });
-  if(t==='day' && !ALL) loadAll().then(renderDay);
-  else if(t==='day') renderDay();
-  if(t==='all' && !ALL) loadAll();
+  if(t==='day'){ if(!ALL) loadAll().then(renderDay); else renderDay(); }
+  if(t==='all'){ if(!ALL) loadAll(); else { if(!$('#f-subj').options.length) fillFilters(); renderAll(); } }
   if(t==='ov') Object.values(CHARTS).forEach(c=>c.resize());
 }
 async function refresh(){ await loadOverview(); }
