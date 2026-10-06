@@ -297,9 +297,11 @@ def api_draw(defs, state, today, body):
     def learned(pid):
         return pts.get(pid, {}).get("mastery", 0) >= 3
 
+    # 依赖约束仅在同学科内生效（M/L/P/D/C/O/N 各自内部）；跨学科依赖（如D29→P01、O16→C11）忽略
     learnable = [
         pid for pid, d in defs.items()
-        if pid not in pts and all(learned(dep) for dep in d["deps"])
+        if pid not in pts
+        and all(learned(dep) for dep in d["deps"] if dep[0] == pid[0])
         and pid not in exclude
     ]
     a_pool = [p for p in learnable if defs[p]["priority"] == "A"]
