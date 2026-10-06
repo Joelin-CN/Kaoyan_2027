@@ -249,6 +249,11 @@ async function loadTrends(){
     tooltip:{trigger:'item', formatter:'{b}: {c} ({d}%)'},
     series:[{type:'pie', radius:['56%','82%'], center:['50%','50%'],
       label:{show:false},
+      emphasis:{
+        scale:true, scaleSize:20,
+        itemStyle:{shadowBlur:22, shadowOffsetY:4, shadowColor:'rgba(31,35,40,.38)',
+                   borderWidth:2, borderColor:'#fff'}
+      },
       data:[
         {name:'未学', value:d['未学']||0, itemStyle:{color:C.unread}},
         {name:'薄弱', value:d['薄弱']||0, itemStyle:{color:C.thin}},
@@ -256,10 +261,26 @@ async function loadTrends(){
         {name:'刷题', value:d['刷题']||0, itemStyle:{color:C.done}},
         {name:'掌握', value:d['掌握']||0, itemStyle:{color:C.master}},
       ].filter(x=>x.value>0 || x.name==='未学')},
-      {type:'pie', radius:['0%','0%'], label:{show:true, position:'center',
-        formatter:`${OV.read_pct}%\n理解及以上`, fontSize:22, fontWeight:700, color:'#1f2328',
-        lineHeight:30}, data:[{value:1}], silent:true}],
+      {type:'pie', radius:['0%','0%'], silent:true,
+        label:{show:true, position:'center',
+          formatter:`{v|${OV.read_pct}%}\n{t|理解及以上}`,
+          rich:{v:{fontSize:17, fontWeight:700, color:'#1f2328', lineHeight:24},
+                t:{fontSize:11, color:'#8b93a3', lineHeight:16}}},
+        data:[{value:1}]}],
     graphic:[]});
+  // 悬停时环形中心切换为该色块的名称+数量，移开恢复
+  const centerFmt = (v, name, color) => ({
+    series:[{}, {label:{formatter:`{v|${v}}\n{t|${name}}`,
+      rich:{v:{fontSize:20, fontWeight:700, color:color||'#1f2328', lineHeight:28},
+            t:{fontSize:11, color:'#8b93a3', lineHeight:16}}}}]
+  });
+  chart('ch-donut').on('mouseover', p=>{
+    if(p.seriesIndex!==0) return;
+    chart('ch-donut').setOption(centerFmt(p.value, p.name, ST_COLOR[p.name]));
+  });
+  chart('ch-donut').on('globalout', ()=>{
+    chart('ch-donut').setOption(centerFmt(OV.read_pct+'%', '理解及以上', '#1f2328'));
+  });
   // 主趋势组合图
   const wk = TR.weeks;
   chart('ch-trend').setOption({
