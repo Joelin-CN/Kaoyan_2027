@@ -20,22 +20,6 @@
     }
    ]
   },
-  "D29": {
-   "mastery": 3,
-   "first_learned": "2026-10-07",
-   "last_reviewed": "2026-10-07",
-   "review_count": 1,
-   "smoke": null,
-   "packet_done": false,
-   "history": [
-    {
-     "date": "2026-10-07",
-     "event": "learn",
-     "from": 3,
-     "to": 3
-    }
-   ]
-  },
   "D01": {
    "mastery": 3,
    "first_learned": "2026-10-07",
@@ -55,48 +39,103 @@
     }
    ]
   },
-  "D10": {
-   "mastery": 3,
-   "first_learned": "2026-10-07",
-   "last_reviewed": "2026-10-07",
+  "D02": {
+   "mastery": 4,
+   "first_learned": "2026-10-08",
+   "last_reviewed": "2026-10-08",
    "review_count": 1,
-   "smoke": null,
+   "smoke": {
+    "date": "2026-10-08",
+    "passed": true
+   },
    "packet_done": false,
    "history": [
     {
-     "date": "2026-10-07",
+     "date": "2026-10-08",
      "event": "learn",
-     "from": 3,
-     "to": 3
+     "from": 4,
+     "to": 4
     }
    ]
   },
-  "O27": {
-   "mastery": 3,
-   "first_learned": "2026-10-07",
-   "last_reviewed": "2026-10-07",
+  "C01": {
+   "mastery": 4,
+   "first_learned": "2026-10-08",
+   "last_reviewed": "2026-10-08",
    "review_count": 1,
-   "smoke": null,
+   "smoke": {
+    "date": "2026-10-08",
+    "passed": true
+   },
    "packet_done": false,
    "history": [
     {
-     "date": "2026-10-07",
+     "date": "2026-10-08",
      "event": "learn",
-     "from": 3,
-     "to": 3
+     "from": 4,
+     "to": 4
+    }
+   ]
+  },
+  "P01": {
+   "mastery": 5,
+   "first_learned": "2026-10-08",
+   "last_reviewed": "2026-10-08",
+   "review_count": 1,
+   "smoke": {
+    "date": "2026-10-08",
+    "passed": true
+   },
+   "packet_done": false,
+   "history": [
+    {
+     "date": "2026-10-08",
+     "event": "learn",
+     "from": 5,
+     "to": 5
+    }
+   ]
+  },
+  "M04": {
+   "mastery": 2,
+   "first_learned": "2026-10-08",
+   "last_reviewed": "2026-10-08",
+   "review_count": 1,
+   "smoke": {
+    "date": "2026-10-08",
+    "passed": false
+   },
+   "packet_done": false,
+   "history": [
+    {
+     "date": "2026-10-08",
+     "event": "learn",
+     "from": 2,
+     "to": 2
     }
    ]
   }
  },
  "days": {
   "2026-10-07": {
-   "energy": 5,
+   "energy": 2,
    "new_ids": [
     "M02",
     "D29",
     "D01",
     "D10",
     "O27"
+   ],
+   "review_ids": [],
+   "settled": true
+  },
+  "2026-10-08": {
+   "energy": 4,
+   "new_ids": [
+    "D02",
+    "C01",
+    "P01",
+    "M04"
    ],
    "review_ids": [],
    "settled": true
