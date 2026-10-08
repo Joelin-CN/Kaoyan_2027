@@ -43,7 +43,7 @@
    "mastery": 4,
    "first_learned": "2026-10-08",
    "last_reviewed": "2026-10-08",
-   "review_count": 1,
+   "review_count": 2,
    "smoke": {
     "date": "2026-10-08",
     "passed": true
@@ -53,6 +53,12 @@
     {
      "date": "2026-10-08",
      "event": "learn",
+     "from": 4,
+     "to": 4
+    },
+    {
+     "date": "2026-10-08",
+     "event": "review",
      "from": 4,
      "to": 4
     }
@@ -62,7 +68,7 @@
    "mastery": 4,
    "first_learned": "2026-10-08",
    "last_reviewed": "2026-10-08",
-   "review_count": 1,
+   "review_count": 2,
    "smoke": {
     "date": "2026-10-08",
     "passed": true
@@ -74,6 +80,12 @@
      "event": "learn",
      "from": 4,
      "to": 4
+    },
+    {
+     "date": "2026-10-08",
+     "event": "review",
+     "from": 4,
+     "to": 4
     }
    ]
   },
@@ -81,7 +93,7 @@
    "mastery": 5,
    "first_learned": "2026-10-08",
    "last_reviewed": "2026-10-08",
-   "review_count": 1,
+   "review_count": 2,
    "smoke": {
     "date": "2026-10-08",
     "passed": true
@@ -93,6 +105,12 @@
      "event": "learn",
      "from": 5,
      "to": 5
+    },
+    {
+     "date": "2026-10-08",
+     "event": "review",
+     "from": 5,
+     "to": 5
     }
    ]
   },
@@ -100,7 +118,7 @@
    "mastery": 2,
    "first_learned": "2026-10-08",
    "last_reviewed": "2026-10-08",
-   "review_count": 1,
+   "review_count": 2,
    "smoke": {
     "date": "2026-10-08",
     "passed": false
@@ -110,6 +128,12 @@
     {
      "date": "2026-10-08",
      "event": "learn",
+     "from": 2,
+     "to": 2
+    },
+    {
+     "date": "2026-10-08",
+     "event": "review",
      "from": 2,
      "to": 2
     }
