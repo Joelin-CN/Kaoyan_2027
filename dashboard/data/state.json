@@ -115,13 +115,13 @@
    ]
   },
   "M04": {
-   "mastery": 2,
+   "mastery": 4,
    "first_learned": "2026-10-08",
-   "last_reviewed": "2026-10-08",
-   "review_count": 2,
+   "last_reviewed": "2026-10-10",
+   "review_count": 3,
    "smoke": {
-    "date": "2026-10-08",
-    "passed": false
+    "date": "2026-10-10",
+    "passed": true
    },
    "packet_done": false,
    "history": [
@@ -136,6 +136,31 @@
      "event": "review",
      "from": 2,
      "to": 2
+    },
+    {
+     "date": "2026-10-10",
+     "event": "adjust",
+     "from": 2,
+     "to": 4
+    }
+   ]
+  },
+  "M03": {
+   "mastery": 3,
+   "first_learned": "2026-10-10",
+   "last_reviewed": "2026-10-10",
+   "review_count": 1,
+   "smoke": {
+    "date": "2026-10-10",
+    "passed": true
+   },
+   "packet_done": false,
+   "history": [
+    {
+     "date": "2026-10-10",
+     "event": "learn",
+     "from": 3,
+     "to": 3
     }
    ]
   }
@@ -163,6 +188,23 @@
    ],
    "review_ids": [],
    "settled": true
+  },
+  "2026-10-09": {
+   "energy": 4,
+   "new_ids": [
+    "D03",
+    "C02",
+    "P02",
+    "M03"
+   ],
+   "review_ids": [
+    "M04"
+   ],
+   "settled": false
+  },
+  "2026-10-10": {
+   "settled": true,
+   "energy": 2
   }
  }
 }
