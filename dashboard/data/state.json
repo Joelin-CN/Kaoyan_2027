@@ -117,10 +117,10 @@
   "M04": {
    "mastery": 4,
    "first_learned": "2026-10-08",
-   "last_reviewed": "2026-10-10",
+   "last_reviewed": "2026-10-09",
    "review_count": 3,
    "smoke": {
-    "date": "2026-10-10",
+    "date": "2026-10-09",
     "passed": true
    },
    "packet_done": false,
@@ -138,14 +138,33 @@
      "to": 2
     },
     {
-     "date": "2026-10-10",
-     "event": "adjust",
+     "date": "2026-10-09",
+     "event": "review",
      "from": 2,
      "to": 4
     }
    ]
   },
   "M03": {
+   "mastery": 3,
+   "first_learned": "2026-10-09",
+   "last_reviewed": "2026-10-09",
+   "review_count": 1,
+   "smoke": {
+    "date": "2026-10-09",
+    "passed": true
+   },
+   "packet_done": false,
+   "history": [
+    {
+     "date": "2026-10-09",
+     "event": "learn",
+     "from": 3,
+     "to": 3
+    }
+   ]
+  },
+  "P02": {
    "mastery": 3,
    "first_learned": "2026-10-10",
    "last_reviewed": "2026-10-10",
@@ -190,7 +209,7 @@
    "settled": true
   },
   "2026-10-09": {
-   "energy": 4,
+   "energy": 2,
    "new_ids": [
     "D03",
     "C02",
@@ -200,11 +219,17 @@
    "review_ids": [
     "M04"
    ],
-   "settled": false
+   "settled": true
   },
   "2026-10-10": {
-   "settled": true,
-   "energy": 2
+   "energy": 1,
+   "new_ids": [
+    "D03",
+    "C02",
+    "P02"
+   ],
+   "review_ids": [],
+   "settled": true
   }
  }
 }
